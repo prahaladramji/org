@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID:       5cb533a1-9a04-4fbb-bdbc-9ef959c268bf
+:END:
+#+title: Emacs Setup
+#+tags: "emacs setup" "org-mode setup" "org-roam setup"
+
+* Initial Emacs setup with DOOM config framework and org-roam
+This is *intended* to be a simple runbook to get setup and be functional with emacs and [[https://orgmode.org/][org-mode]] + [[https://www.orgroam.com/][org-roam]] using the [[https://github.com/hlissner/doom-emacs][doom config framework.]]
+
+** Install Emacs
+*** Osx
+#+begin_src sh
+brew install git ripgrep coreutils fd
+brew install --cask emacs
+#+end_src
+
+*** Debian derivatives
+On debian buster the available emacs package is only v26.x and is not supported by doom-emacs. Insted use the one from back-ports
+#+begin_src sh
+echo "deb https://deb.debian.org/debian buster-backports main" | sudo tee -a /etc/apt/sources.list
+sudo apt update
+sudo apt install git/buster-backports fd-find
+ curl -LO https://github.com/BurntSushi/ripgrep/releases/download/13.0.0/ripgrep_13.0.0_amd64.deb
+$ sudo dpkg -i ripgrep_13.0.0_amd64.deb
+sudo apt install  emacs-gtk/buster-backports # or emacs/buster-backports for only terminal version.
+#+end_src
+
+** Install doom-emacs
+This is the configuration framework used to configure emacs.
+#+begin_src sh
+git clone --depth 1 https://github.com/hlissner/doom-emacs ~/.emacs.d
+~/.emacs.d/bin/doom install
+~/.emacs.d/bin/doom doctor
+#+end_src
+
+** Configure doom-emacs
+There are 3 lisp files that are required to configure emacs, which exists in =$HOME/.doom.d/= folder after running the initial install.
+*** config.el
+Basic configs that I've changed/added
+#+begin_src lisp
+(setq user-full-name "Prahalad Ramji"
+      user-mail-address "prahaladramji@users.noreply.github.com")
+
+;; Font configs,
+;; https://github.com/adobe-fonts/source-code-pro
+;; Source Code Pro is a free adobe font I had from the previous spacemacs setup.
+(setq doom-font (font-spec :family "Source Code Pro" :size 13 :weight 'medium)
+      doom-variable-pitch-font (font-spec :family "Source Code Pro" :size 13))
+(after! doom-themes
+      (setq doom-themes-enable-bold t
+            doom-themes-enable-italic t))
+(custom-set-faces!
+      '(font-lock-comment-face :slant italic))
+
+;; Org configs override
+(setq org-directory (file-truename "~/git/notes/org/")
+      org-roam-directory (concat org-directory "roam")
+      org-journal-dir (concat org-directory "journal")
+      org-journal-file-format "%Y-%m-%d.org")
+#+end_src
+
+*** init.el
+This file contains the basic init which controls what Doom modules are enabled and what order they load in.
+Remember to run =~/.emacs.d/bin/doom sync= after modifying it.
+The org-mode is the only thing I've enabled along with the basic default setup.
+#+begin_src lisp
+(doom! :lang
+       (org               ; organize your plain life in plain text
+        +journal
+        +pretty
+        +roam2))
+#+end_src
+
+*** packages.el
+This is where you'd want to add aditional packages that you may need.
