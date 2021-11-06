@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID:       53e2165e-9747-4d84-b3b1-60019ac02a53
+:END:
+#+title: Debian Setup
+
+* ChromeOS debian
+Basic stuff to setup on debian linux on chromeos.
+** Initial
+After a fresh boot always run an update.
+#+begin_src shell
+sudo apt update -y && sudo apt upgrade -y
+#+end_src
+** Packages installed
+*** Direct downloads
+- direnv
+- docker-compose
+- go
+- jetbrains-toolbox
+- jsonnet
+- k9s
+- kubectl
+- lego
+- tmux
+*** Installed via repositories
+**** docker-ce
+#+begin_src
+deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian   buster stable
+#+end_src
+**** google-cloud-sdk
+#+begin_src
+deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main
+#+end_src
+**** hashicorp
+#+begin_src
+deb [arch=amd64] https://apt.releases.hashicorp.com buster main
+#+end_src
+**** saltstack
+#+begin_src
+deb [signed-by=/usr/share/keyrings/salt-archive-keyring.gpg arch=amd64] https://repo.saltproject.io/py3/debian/10/amd64/latest buster main
+#+end_src
+**** signal
+#+begin_src
+deb [arch=amd64 signed-by=/usr/share/keyrings/signal-desktop-keyring.gpg] https://updates.signal.org/desktop/apt xenial main
+#+end_src
+**** step-cli
+**** sublime
+#+begin_src
+deb https://download.sublimetext.com/ apt/stable/
+#+end_src
+*** Other tasks
+**** Install [[id:5cb533a1-9a04-4fbb-bdbc-9ef959c268bf][emacs]].
+**** Setup basic tools.
+#+begin_src shell
+sudo apt install nvim zsh tmux
+sudo update-alternatives --config editor # set nvim
+
+chsh -s /usr/bin/zsh
+#+end_src

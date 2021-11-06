@@ -1,0 +1,22 @@
+:PROPERTIES:
+:ID:       837231d4-ff84-4dbc-b290-8c32c0f5fa57
+:END:
+#+title: Pi Setup
+
+* Raspberry Pi setup
+** Setup mirror
+#+begin_src
+deb http://mirror.aarnet.edu.au/pub/raspbian/raspbian buster main contrib non-free rpi
+#deb-src http://mirror.aarnet.edu.au/pub/raspbian/raspbian buster main contrib non-free rpi
+#+end_src
+** Add Salt Minion
+#+begin_src shell
+sudo curl -fsSL -o /usr/share/keyrings/salt-archive-keyring.gpg https://repo.saltproject.io/py3/debian/10/armhf/latest/salt-archive-keyring.gpg
+echo "deb [signed-by=/usr/share/keyrings/salt-archive-keyring.gpg arch=armhf] https://repo.saltproject.io/py3/debian/10/armhf/latest buster main" | sudo tee /etc/apt/sources.list.d/salt.list
+
+sudo tee /etc/salt/minion.d/init.conf <<EOF
+master: salt.home.digitalvagabond.tech
+autosign_grains:
+  - master
+EOF
+#+end_src
