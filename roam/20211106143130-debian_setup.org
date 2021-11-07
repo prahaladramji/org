@@ -5,54 +5,170 @@
 
 * ChromeOS debian
 Basic stuff to setup on debian linux on chromeos.
+
 ** Initial
 After a fresh boot always run an update.
 #+begin_src shell
 sudo apt update -y && sudo apt upgrade -y
 #+end_src
-** Packages installed
-*** Direct downloads
-- direnv
-- docker-compose
-- go
-- jetbrains-toolbox
-- jsonnet
-- k9s
-- kubectl
-- lego
-- tmux
-*** Installed via repositories
-**** docker-ce
-#+begin_src
-deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian   buster stable
-#+end_src
-**** google-cloud-sdk
-#+begin_src
-deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main
-#+end_src
-**** hashicorp
-#+begin_src
-deb [arch=amd64] https://apt.releases.hashicorp.com buster main
-#+end_src
-**** saltstack
-#+begin_src
-deb [signed-by=/usr/share/keyrings/salt-archive-keyring.gpg arch=amd64] https://repo.saltproject.io/py3/debian/10/amd64/latest buster main
-#+end_src
-**** signal
-#+begin_src
-deb [arch=amd64 signed-by=/usr/share/keyrings/signal-desktop-keyring.gpg] https://updates.signal.org/desktop/apt xenial main
-#+end_src
-**** step-cli
-**** sublime
-#+begin_src
-deb https://download.sublimetext.com/ apt/stable/
-#+end_src
-*** Other tasks
-**** Install [[id:5cb533a1-9a04-4fbb-bdbc-9ef959c268bf][emacs]].
-**** Setup basic tools.
-#+begin_src shell
-sudo apt install nvim zsh tmux
-sudo update-alternatives --config editor # set nvim
 
+** Packages installed
+*** Apt packages
+Useful basic packages for the system.
+#+begin_src sh
+sudo apt install bc direnv lsb-release neovim stow tmux zsh
+sudo apt install apt-utils software-properties-common
+#+end_src
+
+*** Customizations
+Minor initial shell and editor preferences.
+#+begin_src sh
+sudo passwd $USER # change the password for the local user.
 chsh -s /usr/bin/zsh
+sudo update-alternatives --config editor # set nvim
+#+end_src
+
+*** Get dotfiles
+Clone the dotfiles repo for local configs. (if cloning using ssh setup the ssh before cloning)
+#+begin_src sh
+git clone -b debian git@github.com:prahaladramji/dotfiles.git
+git submodule update --init --recursive
+
+git clone git@github.com:ohmyzsh/ohmyzsh.git ~/.oh-my-zsh
+#+end_src
+
+*** Install pyenv
+Get pyenv setup for managing global python versions.
+#+begin_src sh
+sudo apt install \
+    make build-essential libssl-dev zlib1g-dev \
+    libbz2-dev libreadline-dev libsqlite3-dev llvm \
+    libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev
+
+curl -sS https://pyenv.run | bash
+pyenv install $VERSION
+pyenv global $VERSION
+#+end_src
+
+*** Install emacs
+Docs on [[id:5cb533a1-9a04-4fbb-bdbc-9ef959c268bf][emacs]].
+
+*** Install google-cloud-sdk
+Install google cloud sdk.
+#+begin_src sh
+echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+sudo apt-get install apt-transport-https ca-certificates gnupg
+curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
+sudo apt-get update && sudo apt-get install google-cloud-sdk kubectl
+
+gcloud config configurations create icybit
+gcloud auth login
+gcloud auth application-default login
+gcloud auth application-default set-quota-project sandbox-tech
+#+end_src
+
+*** Install docker-ce
+#+begin_src sh
+curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+sudo apt-get install docker-ce docker-ce-cli containerd.io
+sudo usermod -aG docker $USER
+#+end_src
+
+*** Install salt minion
+#+begin_src sh
+# Download key
+sudo curl -fsSL -o /usr/share/keyrings/salt-archive-keyring.gpg https://repo.saltproject.io/py3/debian/11/amd64/latest/salt-archive-keyring.gpg
+
+# Create apt sources list file
+echo "deb [signed-by=/usr/share/keyrings/salt-archive-keyring.gpg arch=amd64] https://repo.saltproject.io/py3/debian/11/amd64/latest bullseye main" | sudo tee /etc/apt/sources.list.d/salt.list
+
+sudo apt update
+sudo apt install salt-minion
+
+sudo tee /etc/salt/minion.d/init.conf <<EOF
+master: salt.home.digitalvagabond.tech
+autosign_grains:
+  - master
+EOF
+#+end_src
+
+*** Install sublime
+#+begin_src sh
+wget -qO - https://download.sublimetext.com/sublimehq-pub.gpg | sudo apt-key add -
+echo "deb https://download.sublimetext.com/ apt/stable/" | sudo tee /etc/apt/sources.list.d/sublime-text.list
+sudo apt update
+sudo apt install sublime-merge sublime-text
+#+end_src
+
+*** Install hashicorp
+#+begin_src sh
+curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+sudo apt-add-repository "deb [arch=$(dpkg --print-architecture)] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+sudo apt update
+sudo apt install terraform vault
+#+end_src
+
+*** Install go
+#+begin_src sh
+wget https://golang.org/dl/go1.17.3.linux-amd64.tar.gz
+rm -rf /opt/go && tar -C /opt -xzf go1.17.3.linux-amd64.tar.gz
+sudo ln -s /opt/go/bin/* /usr/local/bin
+rm -f go1.17.3.linux-amd64.tar.gz
+#+end_src
+
+*** Install docker-compose
+#+begin_src sh
+sudo curl -sSL "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+#+end_src
+
+*** Install jsonnet
+#+begin_src sh
+wget https://github.com/google/go-jsonnet/releases/download/v0.17.0/jsonnet-go_0.17.0_linux_amd64.deb
+sudo dpkg -i jsonnet-go_0.17.0_linux_amd64.deb
+wget https://github.com/google/go-jsonnet/releases/download/v0.17.0/jsonnetfmt-go_0.17.0_linux_amd64.deb
+sudo dpkg -i jsonnetfmt-go_0.17.0_linux_amd64.deb
+#+end_src
+
+*** Install k9s
+#+begin_src sh
+wget https://github.com/derailed/k9s/releases/download/v0.24.15/k9s_Linux_x86_64.tar.gz
+tar -xzf k9s_Linux_x86_64.tar.gz
+sudo mv k9s /usr/local/bin
+#+end_src
+
+*** Install lego
+#+begin_src sh
+wget https://github.com/go-acme/lego/releases/download/v4.5.3/lego_v4.5.3_linux_amd64.tar.gz
+tar -xzf lego_v4.5.3_linux_amd64.tar.gz
+sudo mv lego /usr/local/bin
+#+end_src
+
+*** Install step-cli
+#+begin_src sh
+wget https://dl.step.sm/gh-release/cli/docs-cli-install/v0.17.7/step-cli_0.17.7_amd64.deb
+sudo dpkg -i step-cli_0.17.7_amd64.deb
+rm -f step-cli_0.17.7_amd64.deb
+#+end_src
+
+*** Install jetbrains-toolbox
+#+begin_src sh
+wget https://download.jetbrains.com/toolbox/jetbrains-toolbox-1.21.9712.tar.gz
+tar -xfz jetbrains-toolbox-1.21.9712.tar.gz
+sudo mv jetbrains/jetbrains-toolbox-1.21.9712 /opt/jetbrains
+sudo chown -R root:root /opt/jetbrains
+sudo ln -s /opt/jetbrains/jetbrains-toolbox /usr/local/bin
+#+end_src
+
+*** Install signal
+#+begin_src sh
+wget -O- https://updates.signal.org/desktop/apt/keys.asc | gpg --dearmor > signal-desktop-keyring.gpg
+cat signal-desktop-keyring.gpg | sudo tee -a /usr/share/keyrings/signal-desktop-keyring.gpg > /dev/null
+echo 'deb [arch=amd64 signed-by=/usr/share/keyrings/signal-desktop-keyring.gpg] https://updates.signal.org/desktop/apt xenial main' |\
+  sudo tee -a /etc/apt/sources.list.d/signal-xenial.list
+sudo apt update && sudo apt install signal-desktop
 #+end_src

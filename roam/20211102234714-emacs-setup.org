@@ -15,14 +15,20 @@ brew install --cask emacs
 #+end_src
 
 *** Debian derivatives
-On debian buster the available emacs package is only v26.x and is not supported by doom-emacs. Insted use the one from back-ports
+On debian bullseye
 #+begin_src sh
-echo "deb https://deb.debian.org/debian buster-backports main" | sudo tee -a /etc/apt/sources.list
-sudo apt update
-sudo apt install git/buster-backports fd-find
- curl -LO https://github.com/BurntSushi/ripgrep/releases/download/13.0.0/ripgrep_13.0.0_amd64.deb
-$ sudo dpkg -i ripgrep_13.0.0_amd64.deb
-sudo apt install  emacs-gtk/buster-backports # or emacs/buster-backports for only terminal version.
+sudo apt install emacs fd-find graphviz shellcheck cmake editorconfig libvterm-dev libpython3.9-
+curl -LO https://github.com/BurntSushi/ripgrep/releases/download/13.0.0/ripgrep_13.0.0_amd64.deb
+sudo dpkg -i ripgrep_13.0.0_amd64.deb
+#+end_src
+
+*** Additional fonts
+Get the adobe free Source Code Pro fonts.
+#+begin_src sh
+git clone git@github.com:adobe-fonts/source-code-pro.git
+sudo mkdir -p /usr/local/share/fonts/truetype/sourcecodepro
+sudo cp *.ttf /usr/local/share/fonts/truetype/sourcecodepro
+fc-cache -f -v
 #+end_src
 
 ** Install doom-emacs
