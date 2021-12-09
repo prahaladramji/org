@@ -1,0 +1,27 @@
+:PROPERTIES:
+:ID:       c23a39ec-afe2-48d3-8b7b-fdb7babea641
+:END:
+#+title: microk8s
+
+* Introduction
+Notes for installing microk8s on ubuntu 20.04.
+
+* Install
+Using snap install microk8s. Setting channel to the prefered release.
+#+begin_src shell
+sudo snap install microk8s --classic --channel=latest/stable
+#+end_src
+
+* Join group
+To avoid using sudo everytime using the microk8s command add the user to the microk8s group
+#+begin_src shell
+sudo usermod -a -G microk8s $USER
+#+end_src
+
+* Init cluster
+Start and test the status of the node
+#+begin_src shell
+microk8s status --wait-ready
+
+microk8s kubectl get nodes
+#+end_src
