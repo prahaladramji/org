@@ -1,0 +1,6 @@
+((nil . ((eval . (setq-local org-directory (locate-dominating-file default-directory ".dir-locals.el")
+                             org-roam-directory (concat org-directory "roam")
+                             org-journal-dir (concat org-directory "journal")
+                             org-agenda-files (list org-roam-directory org-journal-dir)
+                             org-roam-db-location (concat doom-etc-dir "org-roam-personal.db")
+                  )))))
